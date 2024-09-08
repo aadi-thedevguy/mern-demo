@@ -21,7 +21,7 @@ app.use(cookieParser());
 app.use("/api/users", userRoutes);
 app.use("/api/quizzes", quizRoutes);
 
-app.get("/", (req, res) => {
+app.get("/api", (req, res) => {
   res.send("API is running....");
 });
 
