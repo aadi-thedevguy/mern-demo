@@ -28,9 +28,7 @@ function Login() {
   } = useMutation({
     mutationFn: (data) =>
       axios
-        .post(`${baseUrl}/users/auth`, {
-          data,
-        })
+        .post(`${baseUrl}/users/auth`, data, { credentials: "include" })
         .then((res) => res.data),
     onSuccess: (data) => {
       login(data);
@@ -151,7 +149,9 @@ function Login() {
             </div>
             <div className="my-6">
               {isError && (
-                <p className="text-red-500 text-sm italic">{error.message}</p>
+                <p className="text-red-500 text-sm italic">
+                  {error.response.data.message}
+                </p>
               )}
             </div>
           </form>

@@ -30,7 +30,7 @@ const CreateQuiz = () => {
 
   const { mutate, isPending, isError, error } = useMutation({
     mutationFn: async (newQuiz) => {
-      const response = await axios.post(`${baseUrl}/quizzes`, { newQuiz });
+      const response = await axios.post(`${baseUrl}/quizzes`, newQuiz);
       if (!response.ok) {
         throw new Error("Failed to create quiz");
       }
@@ -192,7 +192,9 @@ const CreateQuiz = () => {
         </div>
         <div className="my-6">
           {isError && (
-            <p className="text-red-500 text-sm italic">{error.message}</p>
+            <p className="text-red-500 text-sm italic">
+              {error.response.data.message}
+            </p>
           )}
         </div>
       </form>

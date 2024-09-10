@@ -10,7 +10,13 @@ function Signup() {
     register,
     handleSubmit,
     formState: { errors },
-  } = useForm();
+  } = useForm({
+    defaultValues: {
+      name: "",
+      email: "",
+      password: "",
+    },
+  });
   const { login, user } = useAuth();
   const navigate = useNavigate();
 
@@ -28,11 +34,8 @@ function Signup() {
   } = useMutation({
     mutationFn: (data) =>
       axios
-        .post(`${baseUrl}/users/`, {
-          data,
-        })
+        .post(`${baseUrl}/users`, { credentials: "include" }, data)
         .then((res) => res.data),
-
     onSuccess: (data) => {
       login(data);
       navigate("/");
@@ -40,6 +43,7 @@ function Signup() {
   });
 
   const onSubmit = (data) => {
+    // console.log(data, "data");
     mutate(data);
   };
 
@@ -180,6 +184,7 @@ function Signup() {
             <div className="mt-6">
               <button
                 disabled={isLoading}
+                type="submit"
                 className="w-full px-6 py-3 text-sm font-medium tracking-wide disabled:bg-opacity-55 disabled:cursor-not-allowed text-white capitalize transition-colors duration-300 transform bg-blue-500 rounded-lg hover:bg-blue-400 focus:outline-none focus:ring focus:ring-blue-300 focus:ring-opacity-50"
               >
                 {isLoading ? "Signing up..." : "Sign Up"}
@@ -188,7 +193,9 @@ function Signup() {
 
             <div className="my-6">
               {isError && (
-                <p className="text-red-500 text-sm italic">{error.message}</p>
+                <p className="text-red-500 text-sm italic">
+                  {error.response.data.message}
+                </p>
               )}
             </div>
           </form>

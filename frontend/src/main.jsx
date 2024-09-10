@@ -7,18 +7,38 @@ import "./index.css";
 import Signup from "./routes/signup";
 import Dashboard from "./routes/Dashboard";
 import Login from "./routes/login";
+import Navbar from "./components/Navbar";
 import { AuthProvider } from "./context/authContext";
 import CreateQuiz from "./routes/CreateQuiz";
 
 const router = createBrowserRouter([
   {
     path: "/",
-    element: <Dashboard />,
+    element: (
+      <>
+        <Navbar />
+        <Dashboard />
+      </>
+    ),
   },
   {
     path: "/quizzes/create",
-    element: <CreateQuiz />,
+    element: (
+      <>
+        <Navbar />
+        <CreateQuiz />
+      </>
+    ),
   },
+  // {
+  //   path: "/quizzes/:id",
+  //   element: (
+  //     <>
+  //       <Navbar />
+  //       <CreateQuiz />
+  //     </>
+  //   ),
+  // },
   {
     path: "/signup",
     element: <Signup />,
