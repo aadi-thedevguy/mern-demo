@@ -1,12 +1,18 @@
 import { useForm, useFieldArray } from "react-hook-form";
-import React from "react";
+import React, { useEffect } from "react";
 import { useMutation } from "@tanstack/react-query";
 import { useAuth, baseUrl } from "../context/authContext";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 
 const CreateQuiz = () => {
+  const { user } = useAuth();
   const navigate = useNavigate();
+
+  useEffect(() => {
+    if (!user) return navigate("/login");
+  }, [navigate, user]);
+
   const {
     register,
     handleSubmit,
@@ -21,8 +27,6 @@ const CreateQuiz = () => {
       ],
     },
   });
-
-  const { user } = useAuth();
 
   const { mutate, isPending, isError, error } = useMutation({
     mutationFn: async (newQuiz) => {
@@ -46,6 +50,8 @@ const CreateQuiz = () => {
     control,
     name: "questions",
   });
+
+  if (!user) return null;
 
   return (
     <div className="my-6">

@@ -1,13 +1,21 @@
-import { Link, Outlet } from "react-router-dom";
+import { Link } from "react-router-dom";
+import { useAuth } from "../context/authContext";
 
 function Dashboard() {
+  const { user } = useAuth();
   return (
     <main className="mx-auto container">
       <h1 className="font-bold text-4xl text-center my-6">Quiz App</h1>
-      <button className="btn btn-link">
-        <Link to="/quizzes/create">Create Quiz</Link>
-      </button>
-      <Outlet />
+      <div className="flex items-center gap-4">
+        <button className="btn btn-link">
+          {user ? (
+            <Link to="/quizzes/create">Create Quiz</Link>
+          ) : (
+            <Link to="/login">Login to get Started</Link>
+          )}
+        </button>
+      </div>
+      {/* <Outlet /> */}
     </main>
   );
 }
