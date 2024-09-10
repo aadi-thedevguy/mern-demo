@@ -5,8 +5,5 @@ export default {
   theme: {
     extend: {},
   },
-  daisyui: {
-    themes: ["dark", "aqua"],
-  },
   plugins: [daisyui],
 };
