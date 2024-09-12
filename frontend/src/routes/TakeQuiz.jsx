@@ -10,8 +10,7 @@ import { useEffect, useState } from "react";
 const TakeQuiz = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
-  const params = useParams();
-  const quizId = params.id;
+  const { id: quizId } = useParams();
   const [startTime, setStartTime] = useState(null);
   const [displayTime, setDisplayTime] = useState(0);
 
