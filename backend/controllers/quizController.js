@@ -1,6 +1,6 @@
 import asyncHandler from "express-async-handler";
 import Quiz from "../models/quizModel.js";
-import Visitor from "../models/visitorModel.js";
+import QuizSubmission from "../models/submissionModel.js";
 
 // @desc    Create a new quiz
 // @route   POST /api/quizzes
@@ -8,6 +8,7 @@ import Visitor from "../models/visitorModel.js";
 const createQuiz = asyncHandler(async (req, res) => {
   const { title, description, questions } = req.body;
 
+  // if (questions.length < 1) {
   if (questions.length < 5) {
     res.status(400);
     throw new Error("A quiz must have at least 5 questions");
@@ -30,14 +31,38 @@ const getQuizzes = asyncHandler(async (req, res) => {
 // @route   GET /api/quizzes/:id
 // @access  Public
 const getQuizById = asyncHandler(async (req, res) => {
-  const quiz = await Quiz.findById(req.params.id);
+  const quizId = req.params.id;
+  if (!quizId) {
+    res.status(404);
+    throw new Error("Quiz not found");
+  }
+  const quiz = await Quiz.findById(quizId).select("-questions.correctAnswer");
 
   if (!quiz) {
     res.status(404);
     throw new Error("Quiz not found");
   }
 
-  res.status(200).json(quiz);
+  return res.status(200).json(quiz);
+});
+
+// @desc    Get quiz by ID
+// @route   GET /api/quizzes/:id
+// @access  Protected
+const getUserQuizById = asyncHandler(async (req, res) => {
+  const quizId = req.params.id;
+  if (!quizId) {
+    res.status(404);
+    throw new Error("Quiz not found");
+  }
+  const quiz = await Quiz.findById(quizId);
+
+  if (!quiz) {
+    res.status(404);
+    throw new Error("Quiz not found");
+  }
+
+  return res.status(200).json(quiz);
 });
 
 // @desc    Update a quiz
@@ -82,7 +107,7 @@ const deleteQuiz = asyncHandler(async (req, res) => {
     throw new Error("Not authorized to delete this quiz");
   }
 
-  await quiz.remove();
+  await Quiz.deleteOne({ _id: quiz._id });
   res.status(200).json({ message: "Quiz deleted successfully" });
 });
 
@@ -98,9 +123,9 @@ const submitQuiz = asyncHandler(async (req, res) => {
     throw new Error("Quiz not found");
   }
 
-  const existingVisitor = await Visitor.findOne({
+  const existingVisitor = await QuizSubmission.findOne({
     name,
-    "quizResults.quizId": quiz._id,
+    quizId: quiz._id,
   });
   if (existingVisitor) {
     res.status(400);
@@ -111,15 +136,24 @@ const submitQuiz = asyncHandler(async (req, res) => {
   const score = answers.filter(
     (answer, index) => answer === correctAnswers[index]
   ).length;
-  const percentage = (score / correctAnswers.length) * 100;
-
-  const visitor = new Visitor({
+  const percentage = (score / correctAnswers.length).toFixed(2) * 100;
+  const record = new QuizSubmission({
     name,
-    quizResults: [{ quizId: quiz._id, answers, score, percentage, timeTaken }],
+    quizId: quiz._id,
+    answers,
+    score,
+    percentage,
+    timeTaken,
   });
-  await visitor.save();
+  await record.save();
 
-  res.status(200).json({ score, percentage, correctAnswers, name });
+  res.status(200).json({
+    score,
+    percentage,
+    userAnswers: answers.length,
+    name,
+    timeTaken,
+  });
 });
 
 // @desc    Get quiz reports
@@ -133,7 +167,7 @@ const getQuizReports = asyncHandler(async (req, res) => {
     throw new Error("Quiz not found");
   }
 
-  const reports = await Visitor.find({ "quizResults.quizId": quiz._id });
+  const reports = await QuizSubmission.find({ quizId: quiz._id });
 
   res.status(200).json(reports);
 });
@@ -146,4 +180,5 @@ export {
   deleteQuiz,
   submitQuiz,
   getQuizReports,
+  getUserQuizById,
 };

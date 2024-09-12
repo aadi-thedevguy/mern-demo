@@ -1,13 +1,14 @@
 import { useForm, useFieldArray } from "react-hook-form";
 import React, { useEffect } from "react";
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQuery } from "@tanstack/react-query";
 import { useAuth, baseUrl } from "../context/authContext";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import axios from "axios";
 import { toast } from "sonner";
 
-const CreateQuiz = () => {
+const EditQuiz = () => {
   const { user } = useAuth();
+  const { id } = useParams();
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -15,9 +16,30 @@ const CreateQuiz = () => {
   }, [navigate, user]);
 
   const {
+    data: quiz,
+    isLoading,
+    isError: isQueryError,
+    error,
+  } = useQuery({
+    queryKey: ["quiz", id],
+    queryFn: async () => {
+      const response = await axios.get(`${baseUrl}/quizzes/edit/${id}`, {
+        headers: {
+          Authorization: `Bearer ${user.token}`,
+        },
+        enabled: !!id,
+        refetchOnWindowFocus: false,
+      });
+
+      return response.data;
+    },
+  });
+
+  const {
     register,
     handleSubmit,
     control,
+    reset,
     formState: { errors },
   } = useForm({
     defaultValues: {
@@ -31,7 +53,7 @@ const CreateQuiz = () => {
 
   const { mutate, isPending, isError } = useMutation({
     mutationFn: async (newQuiz) => {
-      const response = await axios.post(`${baseUrl}/quizzes`, newQuiz, {
+      const response = await axios.put(`${baseUrl}/quizzes/${id}`, newQuiz, {
         headers: {
           Authorization: `Bearer ${user.token}`,
         },
@@ -51,7 +73,7 @@ const CreateQuiz = () => {
   });
 
   const onSubmit = (data) => {
-    mutate(data);
+    mutate({ ...data, user: user._id });
   };
 
   const { fields, append, remove } = useFieldArray({
@@ -59,12 +81,49 @@ const CreateQuiz = () => {
     name: "questions",
   });
 
+  useEffect(() => {
+    if (quiz) {
+      reset({
+        title: quiz.title,
+        description: quiz.description,
+        questions: quiz.questions,
+      });
+    }
+  }, [reset, quiz]);
+
   if (!user) return null;
+
+  if (isLoading)
+    return (
+      <div className="grid h-[50vh] place-content-center">
+        <span className="loading loading-spinner loading-lg text-blue-600"></span>
+      </div>
+    );
+
+  if (isQueryError) {
+    return (
+      <div role="alert" className="mt-10 mx-auto max-w-fit alert alert-error">
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          className="h-6 w-6 shrink-0 stroke-current"
+          fill="none"
+          viewBox="0 0 24 24"
+        >
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth="2"
+            d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z"
+          />
+        </svg>
+        <span>{error.message}</span>
+      </div>
+    );
+  }
 
   return (
     <div className="my-6">
-      <h1 className="text-4xl font-bold mb-4 text-center">Create a New Quiz</h1>
-
+      <h1 className="text-4xl font-bold mb-4 text-center">Edit Quiz</h1>
       <form
         onSubmit={handleSubmit(onSubmit)}
         className="space-y-4 max-w-screen-lg mx-auto p-4"
@@ -72,7 +131,7 @@ const CreateQuiz = () => {
         <div className="border-blue-600 border rounded-lg p-4">
           <div className="flex flex-col gap-2">
             <div>
-              <label className="label text-xl text-gray-600">Title</label>
+              <label className="text-xl label text-gray-600">Title</label>
               <input
                 type="text"
                 {...register("title", { required: "Title is required" })}
@@ -86,7 +145,7 @@ const CreateQuiz = () => {
 
           <div className="flex flex-col gap-2">
             <div className="flex-1">
-              <label className="label text-xl text-gray-600">Description</label>
+              <label className="text-xl label text-gray-600">Description</label>
               <textarea
                 placeholder="Description"
                 className="block w-full h-32 px-5 py-3 mt-2 text-gray-700 placeholder-gray-400 bg-white border border-gray-200 rounded-md md:h-48 d focus:border-blue-400  focus:ring-blue-400 focus:outline-none focus:ring focus:ring-opacity-40"
@@ -105,11 +164,12 @@ const CreateQuiz = () => {
 
         <div className="border-blue-600 border rounded-lg p-4">
           <h1 className="text-2xl font-bold mb-4">Questions</h1>
+
           {fields.map((field, index) => (
             <React.Fragment key={field.id}>
               <div className="flex flex-col gap-2 space-y-4">
                 <div className="flex-1">
-                  <label className="label text-xl text-gray-600">
+                  <label className="text-xl label text-gray-600">
                     Question {index + 1}
                   </label>
                   <input
@@ -129,7 +189,7 @@ const CreateQuiz = () => {
 
               <div className="flex flex-col gap-2 space-y-2">
                 <div className="flex-1">
-                  <label className="label text-xl text-gray-600">Options</label>
+                  <label className="text-xl label text-gray-600">Options</label>
                   {field.options.map((option, optionIndex) => (
                     <input
                       key={optionIndex}
@@ -153,7 +213,7 @@ const CreateQuiz = () => {
 
               <div className="flex flex-col gap-2 space-y-2">
                 <div className="flex-1">
-                  <label className="label text-xl text-gray-600">
+                  <label className="text-xl label text-gray-600">
                     Correct Answer
                   </label>
                   <input
@@ -195,6 +255,7 @@ const CreateQuiz = () => {
               </button>
             </React.Fragment>
           ))}
+
           <button
             type="button"
             onClick={() =>
@@ -204,7 +265,7 @@ const CreateQuiz = () => {
                 correctAnswer: "",
               })
             }
-            className="m-2 bg-blue-600 text-white btn"
+            className="m-2 btn-primary text-white btn"
           >
             Add
             <svg
@@ -233,7 +294,7 @@ const CreateQuiz = () => {
               isError ? "btn-error text-white" : "btn-success text-white"
             }`}
           >
-            Create
+            Edit
             {isPending ? (
               <span className="loading loading-dots loading-xs"></span>
             ) : null}
@@ -262,4 +323,4 @@ const CreateQuiz = () => {
   );
 };
 
-export default CreateQuiz;
+export default EditQuiz;

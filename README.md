@@ -9,18 +9,18 @@ The UI for this app is currently under development.
 - Routes for auth, logout, register for Users
 - CRUD For Users, Quizzes
 - Generated Reports for Quizzes taken by the user
-- JWT authentication stored in HTTP-only cookie
+- JWT authentication stored in localStorage
 - Protected routes and endpoints
 - Frontend with React Router, React Query, React Hook Form and Tailwind CSS
+- Centralized state management with React Context API
+- Cors to block requests from other domains
 
 ## Improvements
 
-- Cors to block requests from other domains
-- Unit Testing for React Components with Storybook or React Testing Library
-- Centralized state management with Redux or Zustand
+- E2E Tests with Cypress or Playwright
 - Centralized Server logging with Winston or Pino
 - OAuth with Google, Facebook, Twitter, etc.
-- Better form Validation on the frontend and backend
+- Request Validation on the backend
 
 ### Development
 

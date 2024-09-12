@@ -33,9 +33,7 @@ function Signup() {
     error,
   } = useMutation({
     mutationFn: (data) =>
-      axios
-        .post(`${baseUrl}/users`, { credentials: "include" }, data)
-        .then((res) => res.data),
+      axios.post(`${baseUrl}/users`, data).then((res) => res.data),
     onSuccess: (data) => {
       login(data);
       navigate("/");

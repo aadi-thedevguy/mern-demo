@@ -3,7 +3,7 @@ import app from "../server.js";
 import mongoose from "mongoose";
 import Quiz from "../models/quizModel.js";
 import User from "../models/userModel.js";
-import Visitor from "../models/visitorModel.js";
+import QuizSubmission from "../models/submissionModel.js";
 
 let token, quizId;
 const defaultQuiz = {
@@ -54,14 +54,14 @@ beforeAll(async () => {
   const res = await request(app)
     .post("/api/users/auth")
     .send({ email: "admin@example.com", password: "password" });
-  token = res.headers["set-cookie"][0].split(";")[0].split("=")[1];
+  token = res.body.token;
 });
 
 afterAll(async () => {
   await Promise.all([
     User.deleteMany(),
     Quiz.deleteMany(),
-    Visitor.deleteMany(),
+    QuizSubmission.deleteMany(),
   ]);
   await mongoose.connection.close();
 });
@@ -70,7 +70,7 @@ describe("Quiz API", () => {
   it("should create a new quiz", async () => {
     const res = await request(app)
       .post("/api/quizzes")
-      .set("Cookie", `jwt=${token}`)
+      .set("Authorization", `Bearer ${token}`)
       .send({
         title: "Test Quiz created by admin",
         description: "This is a test quiz created by admin",
@@ -109,7 +109,7 @@ describe("Quiz API", () => {
   it("should fetch all quizzes", async () => {
     const res = await request(app)
       .get("/api/quizzes")
-      .set("Cookie", `jwt=${token}`);
+      .set("Authorization", `Bearer ${token}`);
     expect(res.statusCode).toEqual(200);
     expect(res.body).toBeInstanceOf(Array);
   });
@@ -117,7 +117,7 @@ describe("Quiz API", () => {
   it("should fetch a single quiz by ID", async () => {
     const res = await request(app)
       .get(`/api/quizzes/${quizId}`)
-      .set("Cookie", `jwt=${token}`);
+      .set("Authorization", `Bearer ${token}`);
     expect(res.statusCode).toEqual(200);
     expect(res.body).toHaveProperty("title", "Default Quiz");
   });
@@ -125,7 +125,7 @@ describe("Quiz API", () => {
   it("should update a quiz", async () => {
     const res = await request(app)
       .put(`/api/quizzes/${quizId}`)
-      .set("Cookie", `jwt=${token}`)
+      .set("Authorization", `Bearer ${token}`)
       .send({
         title: "Updated Test Quiz",
         description: "This is an updated test quiz",
@@ -172,7 +172,8 @@ describe("Quiz API", () => {
     expect(res.statusCode).toEqual(200);
     expect(res.body).toHaveProperty("score");
     expect(res.body).toHaveProperty("percentage");
-    expect(res.body).toHaveProperty("correctAnswers");
+    expect(res.body).toHaveProperty("userAnswers");
+    expect(res.body).toHaveProperty("timeTaken");
     expect(res.body).toHaveProperty("name");
   });
 
@@ -194,7 +195,7 @@ describe("Quiz API", () => {
   it("should get quiz reports", async () => {
     const res = await request(app)
       .get(`/api/quizzes/${quizId}/reports`)
-      .set("Cookie", `jwt=${token}`);
+      .set("Authorization", `Bearer ${token}`);
     expect(res.statusCode).toEqual(200);
     expect(res.body).toBeInstanceOf(Array);
   });
