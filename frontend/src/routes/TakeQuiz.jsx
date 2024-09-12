@@ -97,7 +97,10 @@ const TakeQuiz = () => {
 
   if (isError) {
     return (
-      <div role="alert" className="mt-10 mx-auto max-w-fit alert alert-error">
+      <div
+        role="alert"
+        className="mt-10 mx-auto max-w-screen-lg alert alert-error"
+      >
         <svg
           xmlns="http://www.w3.org/2000/svg"
           className="h-6 w-6 shrink-0 stroke-current"
@@ -132,10 +135,10 @@ const TakeQuiz = () => {
           Thanks for taking the quiz, {data.name}
         </h1>
         <h2 className="text-3xl font-semibold italic text-gray-500">
-          Your Score :{data.score}/{data.userAnswers}
+          Your Score: {data.score}/{data.userAnswers}
         </h2>
         <h2 className="text-3xl font-semibold italic text-gray-500">
-          Time Taken :{data.timeTaken}
+          Time Taken: {data.timeTaken}
         </h2>
         <div>
           <div className="flex items-center gap-3 my-2">
@@ -177,6 +180,14 @@ const TakeQuiz = () => {
           </div>
         </div>
       </main>
+    );
+  }
+
+  if (!quiz) {
+    return (
+      <div className="grid h-[50vh] place-content-center">
+        <h1 className="text-4xl font-semibold italic">Quiz not found</h1>
+      </div>
     );
   }
 
