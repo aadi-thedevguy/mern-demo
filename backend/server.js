@@ -16,7 +16,7 @@ const app = express();
 
 app.use(
   cors({
-    origin: "https://mern-quiz.vercel.app",
+    origin: "https://mern-demo.vercel.app/",
     credentials: true,
   })
 );
