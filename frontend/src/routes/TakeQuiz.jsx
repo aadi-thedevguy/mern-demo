@@ -13,6 +13,19 @@ const TakeQuiz = () => {
   const { id: quizId } = useParams();
   const [startTime, setStartTime] = useState(null);
   const [displayTime, setDisplayTime] = useState(0);
+  const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
+
+  const handleNext = () => {
+    if (currentQuestionIndex < quiz.questions.length - 1) {
+      setCurrentQuestionIndex(currentQuestionIndex + 1);
+    }
+  };
+
+  const handlePrevious = () => {
+    if (currentQuestionIndex > 0) {
+      setCurrentQuestionIndex(currentQuestionIndex - 1);
+    }
+  };
 
   const {
     register,
@@ -214,7 +227,7 @@ const TakeQuiz = () => {
               placeholder="John Doe"
               type="text"
               {...register("name", { required: "Name is required" })}
-              className="block w-full px-5 py-3 mt-2 text-gray-700 placeholder-gray-400 bg-white border border-gray-200 rounded-md dark:placeholder-gray-600  focus:border-blue-400  focus:ring-blue-400 focus:outline-none focus:ring focus:ring-opacity-40"
+              className="block w-full px-5 py-3 mt-2 text-gray-700 placeholder-gray-400 bg-white border border-gray-200 rounded-md dark:placeholder-gray-600 focus:border-blue-400 focus:ring-blue-400 focus:outline-none focus:ring focus:ring-opacity-40"
             />
           </div>
           {errors.name && (
@@ -222,41 +235,61 @@ const TakeQuiz = () => {
           )}
         </div>
 
-        {quiz.questions.map((question, index) => (
-          <div key={question._id} className="flex flex-col gap-2 space-y-4">
-            <div className="flex-1">
-              <label className="label text-xl text-gray-600">
-                {question.question}
-              </label>
-              {question.options.map((option, optionIndex) => (
+        <div className="flex flex-col gap-2 space-y-4">
+          <div className="flex-1">
+            <label className="label text-xl text-gray-600">
+              {quiz.questions[currentQuestionIndex].question}
+            </label>
+            {quiz.questions[currentQuestionIndex].options.map(
+              (option, optionIndex) => (
                 <div key={optionIndex} className="flex items-center gap-2">
                   <input
                     type="radio"
                     value={option}
-                    {...register(`answers.${index}`, {
+                    {...register(`answers.${currentQuestionIndex}`, {
                       required: "This question is required",
                     })}
                     className="radio checked:bg-blue-500 my-2"
                   />
                   <span>{option}</span>
                 </div>
-              ))}
-              {errors.answers && errors.answers[index] && (
-                <p className="text-red-500 text-sm">
-                  {errors.answers[index].message}
-                </p>
-              )}
-            </div>
+              )
+            )}
+            {errors.answers && errors.answers[currentQuestionIndex] && (
+              <p className="text-red-500 text-sm">
+                {errors.answers[currentQuestionIndex].message}
+              </p>
+            )}
           </div>
-        ))}
+        </div>
 
-        <button
-          type="submit"
-          disabled={isPending}
-          className="px-4 py-2 disabled:bg-opacity-70 text-white bg-blue-600 rounded-md hover:bg-blue-700 focus:outline-none focus:ring focus:ring-blue-400 focus:ring-opacity-40"
-        >
-          {isPending ? "Submitting..." : "Submit Quiz"}
-        </button>
+        <div className="flex justify-between">
+          <button
+            type="button"
+            onClick={handlePrevious}
+            disabled={currentQuestionIndex === 0}
+            className="btn btn-primary disabled:btn-neutral"
+          >
+            Previous
+          </button>
+          {currentQuestionIndex < quiz.questions.length - 1 ? (
+            <button
+              type="button"
+              onClick={handleNext}
+              className="btn btn-primary disabled:btn-neutral"
+            >
+              Next
+            </button>
+          ) : (
+            <button
+              type="submit"
+              disabled={isPending}
+              className="px-4 py-2 disabled:bg-opacity-70 text-white bg-blue-600 rounded-md hover:bg-blue-700 focus:outline-none focus:ring focus:ring-blue-400 focus:ring-opacity-40"
+            >
+              {isPending ? "Submitting..." : "Submit Quiz"}
+            </button>
+          )}
+        </div>
       </form>
     </main>
   );

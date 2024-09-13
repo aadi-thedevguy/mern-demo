@@ -194,17 +194,23 @@ const EditQuiz = () => {
                 <div className="flex-1">
                   <label className="text-xl label text-gray-600">Options</label>
                   {field.options.map((option, optionIndex) => (
-                    <input
-                      key={optionIndex}
-                      type="text"
-                      {...register(
-                        `questions.${index}.options.${optionIndex}`,
-                        {
-                          required: "Option is required",
-                        }
+                    <React.Fragment key={optionIndex}>
+                      <input
+                        type="text"
+                        {...register(
+                          `questions.${index}.options.${optionIndex}`,
+                          {
+                            required: "Option is required",
+                          }
+                        )}
+                        className="block w-full px-5 py-3 mt-2 text-gray-700 placeholder-gray-400 bg-white border border-gray-200 rounded-md dark:placeholder-gray-600  focus:border-blue-400  focus:ring-blue-400 focus:outline-none focus:ring focus:ring-opacity-40"
+                      />
+                      {errors.questions?.[index]?.options?.[optionIndex] && (
+                        <p className="text-red-500 text-sm">
+                          {errors.questions[index].options[optionIndex].message}
+                        </p>
                       )}
-                      className="block w-full px-5 py-3 mt-2 text-gray-700 placeholder-gray-400 bg-white border border-gray-200 rounded-md dark:placeholder-gray-600  focus:border-blue-400  focus:ring-blue-400 focus:outline-none focus:ring focus:ring-opacity-40"
-                    />
+                    </React.Fragment>
                   ))}
                 </div>
                 {errors.questions?.[index]?.options && (

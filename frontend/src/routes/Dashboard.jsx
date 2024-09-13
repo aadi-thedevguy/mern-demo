@@ -9,6 +9,10 @@ import { queryClient } from "../main";
 function Dashboard() {
   const { user } = useAuth();
   const navigate = useNavigate();
+  useEffect(() => {
+    if (!user) return navigate("/login");
+  }, [user, navigate]);
+
   const {
     isLoading,
     isError,
@@ -22,6 +26,7 @@ function Dashboard() {
         headers: {
           Authorization: `Bearer ${user.token}`,
         },
+        enabled: !!user.token,
       });
       return response.data;
     },
@@ -47,10 +52,6 @@ function Dashboard() {
       );
     },
   });
-
-  useEffect(() => {
-    if (!user) return navigate("/login");
-  }, [user, navigate]);
 
   if (isLoading)
     return (
@@ -105,7 +106,10 @@ function Dashboard() {
       </div>
       <div className="flex flex-wrap gap-4 justify-center items-center">
         {quizzes.map((quiz) => (
-          <div key={quiz._id} className="card bg-base-100 w-96 shadow-xl">
+          <div
+            key={quiz._id}
+            className="card bg-base-100 w-96 min-h-64 shadow-xl"
+          >
             <div className="card-body">
               <h2 className="card-title">{quiz.title}</h2>
               <p>{quiz.description}</p>
