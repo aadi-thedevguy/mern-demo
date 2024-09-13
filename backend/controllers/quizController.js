@@ -71,6 +71,15 @@ const getUserQuizById = asyncHandler(async (req, res) => {
 const updateQuiz = asyncHandler(async (req, res) => {
   const { title, description, questions } = req.body;
 
+  if (questions.length < 5) {
+    res.status(401);
+    throw new Error("A quiz must have at least 5 questions");
+  }
+  if (!req.params.id) {
+    res.status(404);
+    throw new Error("Quiz not found");
+  }
+
   const quiz = await Quiz.findById(req.params.id);
 
   if (!quiz) {
@@ -107,7 +116,10 @@ const deleteQuiz = asyncHandler(async (req, res) => {
     throw new Error("Not authorized to delete this quiz");
   }
 
-  await Quiz.deleteOne({ _id: quiz._id });
+  await Promise.all([
+    Quiz.deleteOne({ _id: quiz._id }),
+    QuizSubmission.deleteMany({ quizId: quiz._id }),
+  ]);
   res.status(200).json({ message: "Quiz deleted successfully" });
 });
 

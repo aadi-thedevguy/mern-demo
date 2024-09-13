@@ -52,7 +52,7 @@ function Leaderboard({ quizId, user }) {
     );
   }
 
-  if (!report) return null;
+  if (!report || !report.length) return null;
 
   return (
     <>
