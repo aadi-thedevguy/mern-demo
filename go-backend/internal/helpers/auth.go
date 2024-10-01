@@ -1,7 +1,11 @@
 package helpers
 
 import (
+	// "app/internal/database"
 	"errors"
+	"net/http"
+	"os"
+	"strings"
 	"time"
 
 	"github.com/golang-jwt/jwt/v5"
@@ -42,4 +46,37 @@ func HashPassword(password string) (string, error) {
 func CheckPasswordHash(password, hash string) bool {
 	err := bcrypt.CompareHashAndPassword([]byte(hash), []byte(password))
 	return err == nil
+}
+
+// Custom Auth Middleware
+func Protect(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		authHeader := r.Header.Get("Authorization")
+		if authHeader == "" {
+			HandleError(w, http.ErrNoCookie, http.StatusUnauthorized)
+			return
+		}
+
+		tokenString := strings.TrimPrefix(authHeader, "Bearer ")
+		_, err := RetrieveJWT(tokenString, os.Getenv("JWT_SECRET"))
+
+		if err != nil {
+			HandleError(w, http.ErrNoCookie, http.StatusUnauthorized)
+			return
+		}
+
+		// userId := claims["userId"].(string)
+		// var user database.User
+
+		// err = collection.FindOne(context.TODO(), bson.M{"_id": userId}).Decode(&user)
+		// if err != nil {
+		// 	helpers.HandleError(w, err, http.StatusUnauthorized)
+		// 	return
+		// }
+
+		// ctx := context.WithValue(r.Context(), "user", user)
+		// next.ServeHTTP(w, r.WithContext(ctx))
+
+		next.ServeHTTP(w, r)
+	})
 }

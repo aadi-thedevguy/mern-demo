@@ -1,7 +1,8 @@
 package server
 
 import (
-	"app/internal/server/routes"
+	"app/internal/handlers"
+	"app/internal/helpers"
 	"encoding/json"
 	"log"
 	"net/http"
@@ -34,9 +35,22 @@ func (s *Server) RegisterRoutes() http.Handler {
 	}))
 
 	r.Get("/health", s.healthHandler)
-	r.Route("/api", func(r chi.Router) {
-		r.Mount("/users", routes.UserRoutes())
-		r.Mount("/quizzes", routes.QuizRoutes())
+	// r.Route("/api/users", func(r chi.Router) {
+	// 	r.Post("/", http.HandlerFunc(handlers.Register))
+	// 	r.Post("/auth", http.HandlerFunc(handlers.Login))
+	// })
+
+	r.Route("/api/quizzes", func(r chi.Router) {
+
+		// Define routes with specific middleware
+		r.With(helpers.Protect).Post("/", http.HandlerFunc(handlers.CreateQuiz))
+		r.With(helpers.Protect).Get("/", http.HandlerFunc(handlers.GetQuizzes))
+		r.With(helpers.Protect).Get("/edit/{id}", http.HandlerFunc(handlers.GetUserQuizById))
+		r.With(helpers.Protect).Put("/{id}", http.HandlerFunc(handlers.UpdateQuiz))
+		r.With(helpers.Protect).Delete("/{id}", http.HandlerFunc(handlers.DeleteQuiz))
+		r.With(helpers.Protect).Get("/{id}/reports", http.HandlerFunc(handlers.GetQuizReports))
+		r.Get("/{id}", http.HandlerFunc(handlers.GetQuizById))        // public to get quiz for users
+		r.Post("/submit/{id}", http.HandlerFunc(handlers.SubmitQuiz)) // public to submit quiz answers
 	})
 
 	r.NotFoundHandler()
