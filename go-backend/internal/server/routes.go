@@ -3,6 +3,7 @@ package server
 import (
 	"app/internal/handlers"
 	"app/internal/helpers"
+	"app/internal/repository"
 	"encoding/json"
 	"log"
 	"net/http"
@@ -35,26 +36,31 @@ func (s *Server) RegisterRoutes() http.Handler {
 	}))
 
 	r.Get("/health", s.healthHandler)
-	// r.Route("/api/users", func(r chi.Router) {
-	// 	r.Post("/", http.HandlerFunc(handlers.Register))
-	// 	r.Post("/auth", http.HandlerFunc(handlers.Login))
-	// })
 
+	userRepo := repository.NewUserRepository(s.db.GetCollection("users"))
+	quizRepo := repository.NewQuizRepository(s.db.GetCollection("quizzes"))
+
+	// User routes
+	userHandler := handlers.NewUserHandler(*userRepo)
+	r.Route("/api/users", func(r chi.Router) {
+		r.Post("/", userHandler.RegisterUser)
+		r.Post("/auth", userHandler.LoginUser)
+	})
+
+	// Quiz routes
+	quizHandler := handlers.NewQuizHandler(*userRepo, *quizRepo)
 	r.Route("/api/quizzes", func(r chi.Router) {
-
-		// Define routes with specific middleware
-		r.With(helpers.Protect).Post("/", http.HandlerFunc(handlers.CreateQuiz))
-		r.With(helpers.Protect).Get("/", http.HandlerFunc(handlers.GetQuizzes))
-		r.With(helpers.Protect).Get("/edit/{id}", http.HandlerFunc(handlers.GetUserQuizById))
-		r.With(helpers.Protect).Put("/{id}", http.HandlerFunc(handlers.UpdateQuiz))
-		r.With(helpers.Protect).Delete("/{id}", http.HandlerFunc(handlers.DeleteQuiz))
-		r.With(helpers.Protect).Get("/{id}/reports", http.HandlerFunc(handlers.GetQuizReports))
-		r.Get("/{id}", http.HandlerFunc(handlers.GetQuizById))        // public to get quiz for users
-		r.Post("/submit/{id}", http.HandlerFunc(handlers.SubmitQuiz)) // public to submit quiz answers
+		r.With(helpers.Protect).Post("/", quizHandler.CreateQuiz)
+		r.With(helpers.Protect).Get("/", quizHandler.GetQuizzes)
+		r.With(helpers.Protect).Get("/edit/{id}", quizHandler.GetUserQuizById)
+		r.With(helpers.Protect).Put("/{id}", quizHandler.UpdateQuiz)
+		r.With(helpers.Protect).Delete("/{id}", quizHandler.DeleteQuiz)
+		r.With(helpers.Protect).Get("/{id}/reports", quizHandler.GetQuizReports)
+		r.Get("/{id}", quizHandler.GetQuizById)
+		r.Post("/submit/{id}", quizHandler.SubmitQuiz)
 	})
 
 	r.NotFoundHandler()
-	r.MethodNotAllowedHandler()
 
 	return r
 }

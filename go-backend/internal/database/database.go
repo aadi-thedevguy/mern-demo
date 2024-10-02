@@ -14,6 +14,7 @@ import (
 
 type Service interface {
 	Health() map[string]string
+	GetCollection(name string) *mongo.Collection
 }
 
 type service struct {
@@ -50,4 +51,8 @@ func (s *service) Health() map[string]string {
 	return map[string]string{
 		"message": "It's healthy",
 	}
+}
+
+func (s *service) GetCollection(name string) *mongo.Collection {
+	return s.db.Database("quiz").Collection(name)
 }

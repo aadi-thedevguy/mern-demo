@@ -11,12 +11,12 @@ import (
 )
 
 type User struct {
-	ID        primitive.ObjectID `bson:"_id,omitempty"`
-	Name      string             `bson:"name"`
-	Email     string             `bson:"email"`
-	Password  string             `bson:"password"`
-	CreatedAt time.Time          `bson:"createdAt"`
-	UpdatedAt time.Time          `bson:"updatedAt"`
+	ID        primitive.ObjectID  `bson:"_id,omitempty"`
+	Name      string              `bson:"name"`
+	Email     string              `bson:"email"`
+	Password  string              `bson:"password"`
+	CreatedAt primitive.Timestamp `bson:"created_at,omitempty"`
+	UpdatedAt primitive.Timestamp `bson:"updated_at,omitempty"`
 }
 
 type UserRepository struct {
@@ -28,8 +28,9 @@ func NewUserRepository(collection *mongo.Collection) *UserRepository {
 }
 
 func (r *UserRepository) InsertUser(ctx context.Context, user *User) error {
-	user.CreatedAt = time.Now()
-	user.UpdatedAt = time.Now()
+	user.ID = primitive.NewObjectID()
+	user.CreatedAt = primitive.Timestamp{T: uint32(time.Now().Unix()), I: 0}
+	user.UpdatedAt = primitive.Timestamp{T: uint32(time.Now().Unix()), I: 0}
 	hashedPassword, err := helpers.HashPassword(user.Password)
 	if err != nil {
 		return err
