@@ -20,7 +20,10 @@ type Server struct {
 }
 
 func NewServer() *Server {
-	port, _ := strconv.Atoi(os.Getenv("PORT"))
+	port, err := strconv.Atoi(os.Getenv("PORT"))
+	if err != nil || port == 0 {
+		port = 5000
+	}
 	return &Server{
 		port: port,
 		db:   database.New(),

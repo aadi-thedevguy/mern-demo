@@ -85,7 +85,7 @@ function Dashboard() {
     );
   }
 
-  if (isFetched && quizzes.length === 0) {
+  if (isFetched && (!quizzes || quizzes.length === 0)) {
     return (
       <div className="flex flex-col items-center h-screen justify-center">
         <h1 className="text-3xl font-bold italic">No quizzes found</h1>

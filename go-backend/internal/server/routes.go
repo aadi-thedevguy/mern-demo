@@ -52,7 +52,7 @@ func (s *Server) RegisterRoutes() http.Handler {
 	r.Route("/api/quizzes", func(r chi.Router) {
 		r.With(helpers.Protect).Post("/", quizHandler.CreateQuiz)
 		r.With(helpers.Protect).Get("/", quizHandler.GetQuizzes)
-		r.With(helpers.Protect).Get("/edit/{id}", quizHandler.GetUserQuizById)
+		r.With(helpers.Protect).Get("/edit/{id}", quizHandler.GetQuizById)
 		r.With(helpers.Protect).Put("/{id}", quizHandler.UpdateQuiz)
 		r.With(helpers.Protect).Delete("/{id}", quizHandler.DeleteQuiz)
 		r.With(helpers.Protect).Get("/{id}/reports", quizHandler.GetQuizReports)

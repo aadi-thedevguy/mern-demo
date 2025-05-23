@@ -27,20 +27,20 @@ func NewUserRepository(collection *mongo.Collection) *UserRepository {
 	return &UserRepository{collection: collection}
 }
 
-func (r *UserRepository) InsertUser(ctx context.Context, user *User) error {
+func (r *UserRepository) InsertUser(ctx context.Context, user *User) (error, *User) {
 	user.ID = primitive.NewObjectID()
 	user.CreatedAt = primitive.Timestamp{T: uint32(time.Now().Unix()), I: 0}
 	user.UpdatedAt = primitive.Timestamp{T: uint32(time.Now().Unix()), I: 0}
 	hashedPassword, err := helpers.HashPassword(user.Password)
 	if err != nil {
-		return err
+		return err, nil
 	}
 	user.Password = hashedPassword
 	_, error := r.collection.InsertOne(ctx, user)
 	if error != nil {
-		return error
+		return error, nil
 	}
-	return nil
+	return nil, user
 }
 
 func (r *UserRepository) FindUserByEmail(ctx context.Context, email string) (*User, error) {
